@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Leer PDF{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Leer examen de laboratorio</h1>
+  <p>Sube el PDF de un examen de sangre y los datos encontrados se pasan al tamizaje rápido.</p>
+</div>
+{% if error %}<div class="alert error">{{ error }}</div>{% endif %}
+
+{% if fields is defined %}
+<section class="card">
+  <h2>Datos encontrados en {{ filename }}</h2>
+  {% if fields %}
+  <table class="table">
+    <thead><tr><th>Dato</th><th>Valor</th><th>Texto del PDF</th></tr></thead>
+    <tbody>
+    {% for feat, f in fields.items() %}
+      <tr><td>{{ labels[feat] }}</td><td><b>{{ f.display }}</b></td><td class="evidence">…{{ f.evidence }}…</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% if truncated %}<p class="note">El PDF tiene más de 10 páginas; solo se leyeron las primeras 10.</p>{% endif %}
+  <div class="actions">
+    <a class="btn primary" href="{{ next_url }}">Usar estos datos</a>
+    <a class="btn ghost" href="{{ url_for('pdf') }}">Subir otro</a>
+  </div>
+  {% else %}
+  <p>No se encontró ninguno de los datos buscados. Puedes ingresarlos a mano en el <a href="{{ url_for('rapido') }}">tamizaje rápido</a>.</p>
+  {% endif %}
+</section>
+{% else %}
+<div class="pdf-grid">
+  <form class="card upload" method="post" enctype="multipart/form-data">
+    <label class="field">Archivo PDF (máximo 5 MB)
+      <input type="file" name="archivo" accept="application/pdf,.pdf" required>
+    </label>
+    <div><button class="btn primary" type="submit">Leer archivo</button></div>
+    <p class="muted">¿No tienes uno a mano? <a href="{{ url_for('static', filename='ejemplo_laboratorio.pdf') }}" download>Descarga un PDF de ejemplo</a>.</p>
+  </form>
+  <aside class="card scope">
+    <h3>Busca estos datos</h3>
+    <ul><li>Edad y sexo</li><li>Presión arterial</li><li>Colesterol total</li><li>Glucosa en ayunas</li></ul>
+    <h3>Limitaciones</h3>
+    <ul><li>Solo PDFs con texto seleccionable (no fotos ni escaneos)</li><li>No lee electrocardiogramas</li></ul>
+    <p class="muted">El archivo se procesa en memoria y no se guarda. Los valores se pueden corregir antes de calcular.</p>
+  </aside>
+</div>
+{% endif %}
+{% endblock %}

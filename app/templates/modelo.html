@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Modelo{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Modelo</h1>
+  <p>Dos Random Forest entrenados con el mismo dataset y evaluados con el mismo conjunto de prueba.</p>
+</div>
+
+{% if not meta %}
+<div class="alert error">No se encontró <code>models/metadata.json</code>. Ejecuta el notebook de entrenamiento.</div>
+{% else %}
+<section class="card">
+  <h2>Comparación en el conjunto de prueba ({{ meta.dataset.n_test }} pacientes)</h2>
+  <table class="table metrics">
+    <thead><tr><th>Métrica</th><th>Rápido (7 variables)</th><th>Completo (11 variables)</th></tr></thead>
+    <tbody>
+    {% for key, name in [('accuracy','Accuracy'),('precision','Precision'),('recall','Recall'),('f1','F1-score'),('roc_auc','ROC-AUC')] %}
+      <tr><td>{{ name }}</td>
+        <td>{{ '%.1f'|format(meta.models.rapido.test[key]*100) }}%</td>
+        <td><b>{{ '%.1f'|format(meta.models.completo.test[key]*100) }}%</b></td></tr>
+    {% endfor %}
+      <tr><td>Accuracy validación cruzada (5 folds)</td>
+        <td>{{ '%.1f'|format(meta.models.rapido.cv_accuracy_mean*100) }}% ± {{ '%.1f'|format(meta.models.rapido.cv_accuracy_std*100) }}</td>
+        <td>{{ '%.1f'|format(meta.models.completo.cv_accuracy_mean*100) }}% ± {{ '%.1f'|format(meta.models.completo.cv_accuracy_std*100) }}</td></tr>
+    </tbody>
+  </table>
+  <p class="muted">El modelo rápido pierde algo de precisión porque no tiene los datos del electrocardiograma, pero lo puede usar cualquier persona.</p>
+</section>
+
+<div class="cols">
+  <figure class="card"><img src="{{ url_for('static', filename='img/confusion_matrices.png') }}" alt="Matrices de confusión"><figcaption>Matrices de confusión</figcaption></figure>
+  <figure class="card"><img src="{{ url_for('static', filename='img/roc_curves.png') }}" alt="Curvas ROC"><figcaption>Curvas ROC</figcaption></figure>
+  <figure class="card wide"><img src="{{ url_for('static', filename='img/feature_importance.png') }}" alt="Importancia de variables"><figcaption>Importancia de cada variable en los dos modelos</figcaption></figure>
+</div>
+
+<section class="card">
+  <h2>Ficha técnica</h2>
+  <dl class="specs">
+    <dt>Dataset</dt><dd>Heart Failure Prediction (fedesoriano, Kaggle) · {{ meta.dataset.n_rows }} registros · {{ meta.dataset.positive_rate }}% con enfermedad cardiaca</dd>
+    <dt>División</dt><dd>80% entrenamiento / 20% prueba, estratificada (random_state = 42)</dd>
+    <dt>Hiperparámetros (completo)</dt><dd>{% for k, v in meta.models.completo.params.items() %}{{ k }} = {{ v }}{{ ', ' if not loop.last }}{% endfor %}</dd>
+    <dt>Hiperparámetros (rápido)</dt><dd>{% for k, v in meta.models.rapido.params.items() %}{{ k }} = {{ v }}{{ ', ' if not loop.last }}{% endfor %}</dd>
+    <dt>Preprocesamiento</dt><dd>Colesterol y presión en 0 → dato faltante; imputación por mediana / moda; one-hot para categóricas</dd>
+    <dt>Explicación</dt><dd>Contribución por variable recorriendo cada árbol (método de Saabas)</dd>
+    <dt>Versión</dt><dd>scikit-learn {{ meta.sklearn_version }} · entrenado {{ meta.trained_at }}</dd>
+  </dl>
+</section>
+{% endif %}
+{% endblock %}
