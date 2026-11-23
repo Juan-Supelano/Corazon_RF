@@ -1,0 +1,10 @@
+# Blueprint de Render: crea el servicio web gratuito directamente desde el repositorio.
+services:
+  - type: web
+    name: corazon-rf
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app.app:app --workers 1 --threads 4 --timeout 60
+    healthCheckPath: /health
+    autoDeploy: true
