@@ -1,3 +1,4 @@
 # docs/
 
-Aquí va la presentación final: `presentacion.pdf` (máximo 15 diapositivas).
+- `presentacion.pdf`: presentación final (15 diapositivas).
+- `video/`: video de respaldo de la demostración.
