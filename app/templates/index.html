@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Inicio{% endblock %}
+{% block content %}
+<div class="intro">
+  <h1>Predicción de enfermedad cardiaca</h1>
+  <p>Esta aplicación usa un modelo Random Forest entrenado con datos de 918 pacientes para estimar la probabilidad de enfermedad cardiaca. Hay dos formas de usarla, según la información que tengas.</p>
+</div>
+
+<table class="modes">
+  <tr>
+    <td>
+      <h3>Tamizaje rápido</h3>
+      <p>7 preguntas: edad, sexo, síntomas y exámenes de rutina. Si no sabes un dato puedes dejarlo en “No sé”.</p>
+    </td>
+    <td class="for">Cualquier persona</td>
+    <td><a class="btn primary" href="{{ url_for('rapido') }}">Empezar</a></td>
+  </tr>
+  <tr>
+    <td>
+      <h3>Evaluación clínica</h3>
+      <p>Las 11 variables del dataset, incluidos el electrocardiograma y la prueba de esfuerzo.</p>
+    </td>
+    <td class="for">Personal de salud</td>
+    <td><a class="btn ghost" href="{{ url_for('clinico') }}">Abrir</a></td>
+  </tr>
+  <tr>
+    <td>
+      <h3>Leer un examen en PDF</h3>
+      <p>Toma edad, sexo, presión, colesterol y glucosa de un examen de laboratorio digital y los pasa al tamizaje rápido.</p>
+    </td>
+    <td class="for">Opcional</td>
+    <td><a class="btn ghost" href="{{ url_for('pdf') }}">Subir PDF</a></td>
+  </tr>
+</table>
+
+<p class="data-note">El modelo rápido es menos preciso que el clínico porque no tiene los datos del ECG. En la página <a href="{{ url_for('modelo') }}">Modelo</a> están las métricas de los dos.</p>
+{% endblock %}

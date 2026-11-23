@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Evaluación clínica{% endblock %}
+{% macro sel(name, options, help=None) -%}
+  <select name="{{ name }}" required>
+    <option value="" disabled {{ 'selected' if not form.get(name) }}>Selecciona…</option>
+    {% for v, t in options %}<option value="{{ v }}" {{ 'selected' if form.get(name) == v }}>{{ t }}</option>{% endfor %}
+  </select>
+  {% if help %}<small>{{ help }}</small>{% endif %}
+{%- endmacro %}
+{% block content %}
+<div class="page-head">
+  <h1>Evaluación clínica</h1>
+  <p>Modelo completo con las 11 variables. Requiere los resultados del electrocardiograma y de la prueba de esfuerzo.</p>
+</div>
+{% if error %}<div class="alert error">{{ error }}</div>{% endif %}
+
+<form class="card clinical" method="post" action="{{ url_for('resultado') }}">
+  <input type="hidden" name="mode" value="clinico">
+
+  <fieldset>
+    <legend>Paciente</legend>
+  <div class="grid">
+    <label class="field">Edad (años)
+      <input type="number" name="age" min="18" max="100" required value="{{ form.get('age', '') }}">
+    </label>
+    <label class="field">Sexo
+      {{ sel('sex', [('M','Hombre'),('F','Mujer')]) }}
+    </label>
+    <label class="field">Tipo de dolor torácico
+      {{ sel('cp', [('TA','TA · Angina típica'),('ATA','ATA · Angina atípica'),('NAP','NAP · Dolor no anginoso'),('ASY','ASY · Asintomático')]) }}
+    </label>
+  </div>
+
+  </fieldset>
+  <fieldset>
+    <legend>Laboratorio y signos vitales</legend>
+  <div class="grid">
+    <label class="field">Presión arterial en reposo (mmHg)
+      <input type="number" name="bp" min="70" max="250" value="{{ form.get('bp', '') }}" placeholder="Vacío = no disponible">
+    </label>
+    <label class="field">Colesterol sérico (mg/dL)
+      <input type="number" name="chol" min="80" max="700" value="{{ form.get('chol', '') }}" placeholder="Vacío = no disponible">
+    </label>
+    <label class="field">Glucosa en ayunas &gt; 120 mg/dL
+      {{ sel('fbs', [('1','Sí'),('0','No')]) }}
+    </label>
+  </div>
+
+  </fieldset>
+  <fieldset>
+    <legend>Electrocardiograma y prueba de esfuerzo</legend>
+  <div class="grid">
+    <label class="field">ECG en reposo
+      {{ sel('ecg', [('Normal','Normal'),('ST','ST · Anomalía onda ST-T'),('LVH','LVH · Hipertrofia ventricular izquierda')]) }}
+    </label>
+    <label class="field">Frecuencia cardiaca máxima (lpm)
+      <input type="number" name="maxhr" min="60" max="220" required value="{{ form.get('maxhr', '') }}">
+    </label>
+    <label class="field">Angina inducida por ejercicio
+      {{ sel('exang', [('Y','Sí'),('N','No')]) }}
+    </label>
+    <label class="field">Oldpeak (depresión del ST, mm)
+      <input type="number" name="oldpeak" min="-3" max="7" step="0.1" required value="{{ form.get('oldpeak', '') }}">
+    </label>
+    <label class="field">Pendiente del segmento ST
+      {{ sel('slope', [('Up','Ascendente'),('Flat','Plana'),('Down','Descendente')]) }}
+    </label>
+  </div>
+
+  </fieldset>
+
+  <div class="form-foot">
+    <button type="button" class="btn ghost" id="demo">Cargar paciente de ejemplo</button>
+    <button type="submit" class="btn primary">Calcular riesgo</button>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+// Paciente de ejemplo para la demostración en vivo.
+document.getElementById("demo").addEventListener("click", () => {
+  const f = document.querySelector("form.clinical");
+  const ex = { age: 61, sex: "M", cp: "ASY", bp: 148, chol: 203, fbs: "0",
+               ecg: "Normal", maxhr: 120, exang: "Y", oldpeak: 1.6, slope: "Flat" };
+  for (const [k, v] of Object.entries(ex)) f.elements[k].value = v;
+});
+</script>
+{% endblock %}

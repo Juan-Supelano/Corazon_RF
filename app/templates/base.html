@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Inicio{% endblock %} | Corazón RF</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('home') }}">Corazón <span>RF</span></a>
+    <button class="menu-btn" aria-label="Menú" onclick="document.body.classList.toggle('nav-open')">☰</button>
+    <nav class="nav">
+      <a href="{{ url_for('home') }}" class="{{ 'on' if active == 'inicio' }}">Inicio</a>
+      <a href="{{ url_for('rapido') }}" class="{{ 'on' if active == 'rapido' }}">Tamizaje rápido</a>
+      <a href="{{ url_for('clinico') }}" class="{{ 'on' if active == 'clinico' }}">Evaluación clínica</a>
+      <a href="{{ url_for('pdf') }}" class="{{ 'on' if active == 'pdf' }}">Leer PDF</a>
+      <a href="{{ url_for('modelo') }}" class="{{ 'on' if active == 'modelo' }}">Modelo</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <p>Proyecto académico de Inteligencia Artificial I. Los resultados no son un diagnóstico médico.</p>
+    <p>Datos: Heart Failure Prediction Dataset (Kaggle) · <a href="https://github.com/Juan-Supelano/Corazon_RF">Repositorio en GitHub</a></p>
+  </footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Tamizaje rápido{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Tamizaje rápido</h1>
+  <p>Preguntas sobre ti, tus síntomas y tus exámenes. No se necesita electrocardiograma.</p>
+</div>
+
+{% if error %}<div class="alert error">{{ error }}</div>{% endif %}
+{% if from_pdf %}<div class="alert info">Precargamos los datos que encontramos en tu PDF. Revísalos y completa lo que falta.</div>{% endif %}
+
+<form class="wizard card" method="post" action="{{ url_for('resultado') }}" id="wizard" novalidate>
+  <input type="hidden" name="mode" value="rapido">
+  <p class="step-count">Paso <b>1</b> de 4</p>
+  <div class="progress"><span style="width:25%"></span></div>
+
+  <!-- Paso 1 -->
+  <fieldset class="step on" data-step="1">
+    <legend>Sobre ti</legend>
+    <label class="field">¿Cuántos años tienes?
+      <input type="number" name="age" min="18" max="100" required value="{{ prefill.age }}" inputmode="numeric" placeholder="Ej. 54">
+    </label>
+    <div class="field">Sexo
+      <div class="choice">
+        <label><input type="radio" name="sex" value="M" required {{ 'checked' if prefill.sex == 'M' }}><span>Hombre</span></label>
+        <label><input type="radio" name="sex" value="F" {{ 'checked' if prefill.sex == 'F' }}><span>Mujer</span></label>
+      </div>
+    </div>
+  </fieldset>
+
+  <!-- Paso 2 -->
+  <fieldset class="step" data-step="2">
+    <legend>Síntomas</legend>
+    <div class="field">¿Has sentido dolor, presión u opresión en el pecho en las últimas semanas?
+      <div class="choice">
+        <label><input type="radio" name="has_pain" value="si" required><span>Sí</span></label>
+        <label><input type="radio" name="has_pain" value="no"><span>No</span></label>
+      </div>
+    </div>
+    <div class="pain-detail" hidden>
+      <div class="field">¿El dolor está en el centro del pecho (detrás del esternón)?
+        <div class="choice">
+          <label><input type="radio" name="central" value="si"><span>Sí</span></label>
+          <label><input type="radio" name="central" value="no"><span>No</span></label>
+        </div>
+      </div>
+      <div class="field">¿Aparece al hacer esfuerzo (caminar rápido, subir escaleras)?
+        <div class="choice">
+          <label><input type="radio" name="exertion" value="si"><span>Sí</span></label>
+          <label><input type="radio" name="exertion" value="no"><span>No</span></label>
+        </div>
+      </div>
+      <div class="field">¿Se quita al descansar unos minutos?
+        <div class="choice">
+          <label><input type="radio" name="relief" value="si"><span>Sí</span></label>
+          <label><input type="radio" name="relief" value="no"><span>No</span></label>
+        </div>
+      </div>
+    </div>
+  </fieldset>
+
+  <!-- Paso 3 -->
+  <fieldset class="step" data-step="3">
+    <legend>Exámenes de rutina</legend>
+    <p class="hint">Si no tienes el dato, marca “No sé” y se usa el valor más común del dataset.</p>
+    <div class="field">Presión arterial sistólica (el número de arriba, ej. <b>130</b>/85)
+      <div class="inline">
+        <input type="number" name="bp" min="70" max="250" value="{{ prefill.bp }}" inputmode="numeric" placeholder="mmHg">
+        <label class="nose"><input type="checkbox" name="bp_nose"> No sé</label>
+      </div>
+    </div>
+    <div class="field">Colesterol total <small>(en el examen de sangre aparece como “Colesterol total”)</small>
+      <div class="inline">
+        <input type="number" name="chol" min="80" max="700" value="{{ prefill.chol }}" inputmode="numeric" placeholder="mg/dL">
+        <label class="nose"><input type="checkbox" name="chol_nose"> No sé</label>
+      </div>
+    </div>
+    <div class="field">¿Tu glucosa en ayunas es mayor a 120 mg/dL, o te han diagnosticado diabetes?
+      <div class="choice">
+        <label><input type="radio" name="fbs" value="si" required {{ 'checked' if prefill.fbs == 'si' }}><span>Sí</span></label>
+        <label><input type="radio" name="fbs" value="no" {{ 'checked' if prefill.fbs == 'no' }}><span>No</span></label>
+        <label><input type="radio" name="fbs" value="nose"><span>No sé</span></label>
+      </div>
+    </div>
+  </fieldset>
+
+  <!-- Paso 4 -->
+  <fieldset class="step" data-step="4">
+    <legend>Revisa tus respuestas</legend>
+    <dl class="review" id="review"></dl>
+  </fieldset>
+
+  <p class="step-error" role="alert"></p>
+  <div class="wizard-nav">
+    <button type="button" class="btn ghost" data-prev disabled>Atrás</button>
+    <button type="button" class="btn primary" data-next>Siguiente</button>
+    <button type="submit" class="btn primary" data-submit hidden>Calcular riesgo</button>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/wizard.js') }}"></script>{% endblock %}
