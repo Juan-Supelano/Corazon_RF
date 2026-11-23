@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Resultado{% endblock %}
+{% block content %}
+{% set n = r.votes|length %}
+<div class="page-head">
+  <h1>Resultado</h1>
+  <p>{{ 'Tamizaje rápido (7 variables)' if r.mode == 'rapido' else 'Evaluación clínica (11 variables)' }}</p>
+</div>
+
+<div class="result-grid">
+  <section class="card">
+    <div class="forest-head">
+      <span class="pct">{{ r.probability|round|int }}%</span>
+      <span class="level {{ r.level.color }}">{{ r.level.label }}</span>
+    </div>
+    <p class="muted">Probabilidad estimada de enfermedad cardiaca.</p>
+
+    <div class="forest" style="grid-template-columns: repeat({{ 20 if n >= 200 else 10 }}, 1fr)"
+         role="img" aria-label="{{ r.votes_yes }} de {{ n }} árboles votaron enfermedad">
+      {% for v in r.votes %}<i class="{{ 'y' if v else 'n' }}"></i>{% endfor %}
+    </div>
+    <div class="forest-legend">
+      <span class="y">Enfermedad: {{ r.votes_yes }}</span>
+      <span class="n">Sin enfermedad: {{ n - r.votes_yes }}</span>
+    </div>
+    <p class="muted">Cada cuadro es uno de los {{ n }} árboles del bosque y muestra cómo clasificó a este paciente. El porcentaje es el promedio de las probabilidades de todos los árboles, por eso puede diferir un poco de la proporción de votos.</p>
+    <p class="scale">Escala: bajo &lt; 35% · moderado 35–65% · alto ≥ 65%. Promedio del dataset: {{ r.base|round|int }}%.</p>
+  </section>
+
+  <section class="card">
+    <h2>Qué influyó en el resultado</h2>
+    <p class="muted">Puntos porcentuales que cada dato sumó (rojo) o restó (verde) respecto al promedio.</p>
+    {% set maxabs = (r.factors | map(attribute='impact') | map('abs') | max) or 1 %}
+    <ul class="factors">
+      {% for f in r.factors %}
+      <li>
+        <div class="f-head"><span>{{ f.label }}</span><b>{{ f.value }}</b></div>
+        <div class="bar-row">
+          <div class="half neg">{% if f.impact < 0 %}<span style="width: {{ (f.impact|abs / maxabs * 100)|round }}%"></span>{% endif %}</div>
+          <div class="half pos">{% if f.impact > 0 %}<span style="width: {{ (f.impact / maxabs * 100)|round }}%"></span>{% endif %}</div>
+          <em class="{{ 'up' if f.impact > 0 else 'down' }}">{{ '%+.1f'|format(f.impact) }}</em>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% if r.missing %}
+    <p class="note">Sin dato (“No sé”): {{ r.missing|join(', ') }}. Se usó el valor más común del dataset.</p>
+    {% endif %}
+  </section>
+</div>
+
+<div class="card">
+  {% if r.mode == 'rapido' %}
+    <p>Este resultado usa solo información básica. Con un electrocardiograma, un médico puede usar la <a href="{{ url_for('clinico') }}">evaluación clínica</a>, que es más precisa.</p>
+  {% else %}
+    <p>Resultado del modelo completo. Debe interpretarse junto con la historia clínica del paciente.</p>
+  {% endif %}
+  <div class="actions">
+    <a class="btn ghost" href="{{ url_for('rapido' if r.mode == 'rapido' else 'clinico') }}">Nueva evaluación</a>
+    <button class="btn ghost" onclick="window.print()">Imprimir</button>
+  </div>
+</div>
+{% endblock %}
